@@ -1,0 +1,23 @@
+node_modules/
+.next/
+dist/
+__pycache__/
+*.pyc
+.env
+.env.local
+*.log
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+apps/web/.next/
+apps/api/.venv/
+apps/api/__pycache__/
+.venv-tools/
+# Generated local tooling and temporary directories
+node_modules/
+.venv-tools/
+.kotlin/
+.idea/
+*.iml
+{src*/

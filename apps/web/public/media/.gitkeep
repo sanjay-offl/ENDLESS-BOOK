@@ -1,0 +1,15 @@
+# Media assets live here and are served from /media/* by Next.js.
+#
+# Expected filenames (none are committed - the repo ships without binaries):
+#   hero.jpg          hero still image            (optional poster)
+#   hero-loop.mp4     hero backdrop loop          (optional)
+#   footer-loop.mp4   footer backdrop loop        (optional)
+#
+# Every consumer goes through <VideoBackdrop>, which HEAD-probes the file
+# before rendering <video>. A missing file therefore costs one 200/404 on a
+# HEAD request and paints a gradient instead - no broken video element and no
+# console error.
+#
+#   H.264 + AAC, 1920x1080, under ~2 MB, no audio track needed (muted).
+#   ffmpeg -i input.mov -vf scale=1920:-2 -c:v libx264 -crf 26 -preset slow \
+#          -an -movflags +faststart hero-loop.mp4

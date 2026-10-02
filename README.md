@@ -1,0 +1,114 @@
+# What I Saw When I Was a Kid
+
+An endless book of childhood memories. Every chapter is exactly 3 pages, written by a real person. Chapter one is by the founder, Sanjay. After that, anyone can sign in and add the next chapter. The book never ends.
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22+
+- Python 3.12+
+- A Google Cloud project with billing enabled
+- `gcloud` CLI authenticated
+
+### Local Development
+
+```bash
+# 1. Clone and install
+git clone <repo-url>
+cd "ENDLESS BOOK"
+cp .env.example .env
+# Fill in .env with your values
+
+# 2. Install dependencies
+cd apps/web && npm install
+cd ../api && uv pip install -e ".[dev]"
+
+# 3. Run both services
+cd ../.. && npm run dev
+```
+
+- Web: http://localhost:3000
+- API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### Seed the Database
+
+```bash
+cd apps/api
+uv run python seed.py
+```
+
+This creates chapter one (The Wheel Cart of Bangles) and three sample chapters.
+
+## Project Structure
+
+```
+.
+├── apps/
+│   ├── web/              # Next.js frontend
+│   │   ├── src/
+│   │   │   ├── app/      # Pages (App Router)
+│   │   │   ├── components/
+│   │   │   │   ├── glass/    # Glassmorphism UI components
+│   │   │   │   ├── scenes/   # SVG art and animations
+│   │   │   │   └── reader/   # Book reader components
+│   │   │   ├── lib/      # Utilities, API client, auth
+│   │   │   └── styles/   # Global CSS with design tokens
+│   │   └── public/
+│   └── api/              # FastAPI backend
+│       ├── app/
+│       │   ├── main.py   # App entry point
+│       │   ├── routers/  # API endpoints
+│       │   ├── services/ # Google Cloud services
+│       │   ├── agents/   # ADK agents (Page Weaver, Moderator)
+│       │   ├── models/   # Pydantic schemas
+│       │   └── core/     # Config, auth, logging
+│       └── tests/        # Pytest tests
+├── infra/                # Dockerfiles, Cloud Build, Firestore rules
+└── docs/                 # Documentation
+```
+
+## Features
+
+- **Read the book** — Beautiful page-turning reader with keyboard, swipe, and click navigation
+- **Write a chapter** — Guided 3-page writing flow with live preview
+- **Speak your memory** — Microphone recording with Speech-to-Text (6 languages)
+- **AI Page Weaver** — Splits rough text into 3 pages, polishes grammar, suggests title
+- **Memory Map** — MapLibre map with glowing pins for each chapter
+- **Read in your language** — Translation with caching (English, Tamil, Hindi, Telugu, Malayalam, Kannada)
+- **Vector search** — "Others who remember too" — find similar memories
+- **Moderation** — Async AI moderation via Pub/Sub
+- **Analytics** — BigQuery event tracking
+- **Founder tools** — Edit, feature, hide, export chapters
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 15, TypeScript, Tailwind CSS, GSAP |
+| Maps | MapLibre GL JS |
+| Backend | FastAPI, Python 3.12, Pydantic v2 |
+| AI | Gemini, Google ADK |
+| Voice | Google Cloud Speech-to-Text |
+| Translation | Google Cloud Translation |
+| Database | Firestore |
+| Analytics | BigQuery |
+| Files | Cloud Storage |
+| Vector Search | Firestore Vector Search |
+| Async Jobs | Pub/Sub |
+| Hosting | Cloud Run |
+| CI/CD | Cloud Build |
+| Auth | Firebase Authentication |
+
+## Documentation
+
+- [SETUP.md](SETUP.md) — Complete Google Cloud setup guide
+- [docs/ANIMATION.md](docs/ANIMATION.md) — After Effects rig and Lottie export pipeline
+- [COSTS.md](COSTS.md) — Free tier design and cost caps
+- [DECISIONS.md](DECISIONS.md) — Architecture decisions
+- [CHANGELOG.md](CHANGELOG.md) — What changed and when
+
+## License
+
+MIT
