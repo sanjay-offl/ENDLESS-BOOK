@@ -29,10 +29,9 @@ An endless book of childhood memories. Every chapter is exactly 3 pages, written
 
 ### Prerequisites
 
-- Node.js 22+
-- Python 3.12+
-- A Google Cloud project with billing enabled
-- `gcloud` CLI authenticated
+- JDK 21
+- A Google Cloud project with billing enabled for future cloud features
+- `gcloud` CLI authenticated when deploying
 
 ### Archived stack reference
 
@@ -70,26 +69,11 @@ This creates chapter one (The Wheel Cart of Bangles) and three sample chapters.
 .
 ├── legacy/
 │   ├── apps/
-│   │   ├── web/              # Next.js frontend
-│   │   ├── src/
-│   │   │   ├── app/      # Pages (App Router)
-│   │   │   ├── components/
-│   │   │   │   ├── glass/    # Glassmorphism UI components
-│   │   │   │   ├── scenes/   # SVG art and animations
-│   │   │   │   └── reader/   # Book reader components
-│   │   │   ├── lib/      # Utilities, API client, auth
-│   │   │   └── styles/   # Global CSS with design tokens
-│   │   └── public/
-│   │   └── api/              # FastAPI backend
-│   │       ├── app/
-│       │   ├── main.py   # App entry point
-│       │   ├── routers/  # API endpoints
-│       │   ├── services/ # Google Cloud services
-│       │   ├── agents/   # ADK agents (Page Weaver, Moderator)
-│       │   ├── models/   # Pydantic schemas
-│       │   └── core/     # Config, auth, logging
-│   │       └── tests/        # Pytest tests
-├── infra/                # Firestore rules, indexes, and Pub/Sub notes
+│   │   ├── web/              # Archived Next.js frontend
+│   │   └── api/              # Archived FastAPI backend
+│   ├── scripts/              # Archived asset/deployment scripts
+│   └── infra/                # Archived deployment manifests
+├── infra/                # Active Firestore rules, indexes, and Pub/Sub notes
 └── docs/                 # Documentation
 ```
 
@@ -110,9 +94,9 @@ This creates chapter one (The Wheel Cart of Bangles) and three sample chapters.
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 15, TypeScript, Tailwind CSS, GSAP |
+| Active frontend | Kotlin Multiplatform, Compose Multiplatform Wasm |
 | Maps | MapLibre GL JS |
-| Backend | FastAPI, Python 3.12, Pydantic v2 |
+| Active backend | Kotlin, Ktor, Netty |
 | AI | Gemini, Google ADK |
 | Voice | Google Cloud Speech-to-Text |
 | Translation | Google Cloud Translation |

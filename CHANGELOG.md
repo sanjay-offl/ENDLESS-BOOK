@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased] - 2026-10-02
+
+### Kotlin-only Phase 1B
+
+- Added the Ktor root, health, readiness, CORS, and test coverage.
+- Converted `composeApp` to a Compose Multiplatform Wasm/optional Android client.
+- Archived the Next.js/FastAPI stack under `legacy/` and preserved the
+  `legacy-nextjs-fastapi` tag.
+
 ## [1.1.3] - 2026-09-30
 
 ### Animated Character — Automated EPS → Pose SVG → GSAP Pipeline

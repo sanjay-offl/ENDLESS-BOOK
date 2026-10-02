@@ -14,10 +14,7 @@ apps/web/.next/
 apps/api/.venv/
 apps/api/__pycache__/
 .venv-tools/
-# Generated local tooling and temporary directories
-node_modules/
-.venv-tools/
+\{src*
 .kotlin/
 .idea/
 *.iml
-{src*/

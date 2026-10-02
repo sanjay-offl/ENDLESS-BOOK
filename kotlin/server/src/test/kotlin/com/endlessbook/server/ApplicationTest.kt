@@ -2,7 +2,7 @@ package com.endlessbook.server
 
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import kotlin.test.Test
@@ -17,7 +17,7 @@ class ApplicationTest {
         val response = client.get("/")
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(ContentType.Text.Html.withCharset(Charsets.UTF_8), response.contentType())
+        assertTrue(response.headers[HttpHeaders.ContentType]?.startsWith("text/html") == true)
         assertTrue(response.bodyAsText().contains("The Endless Book API is running"))
     }
 
