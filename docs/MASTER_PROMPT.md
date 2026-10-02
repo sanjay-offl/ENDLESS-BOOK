@@ -80,7 +80,7 @@ Use Compose Multiplatform, Navigation, ViewModels with StateFlow, and the Ktor c
 
 Animation: GSAP does not exist in Kotlin, so rebuild the same feel with Compose animation APIs (AnimatedVisibility, animate*AsState, Animatable, updateTransition). Include line masked headline reveals, scroll triggered section entrances using LazyListState, directional page turns, and a reduced motion setting that follows the system preference.
 
-Character: load the six pose SVGs (idle, wave, thinking, celebrating, encouraging, walk) from apps/web/public/character/poses as Compose resources. Keep the frame size 150.06 by 256.36 units and identical foot baselines.
+Character: load the six pose SVGs (idle, wave, thinking, celebrating, encouraging, walk) from legacy/apps/web/public/character/poses as Compose resources. Keep the frame size 150.06 by 256.36 units and identical foot baselines.
 
 Sign in: Google Sign In with Firebase Authentication. Put platform specific code behind expect and actual. If web sign in cannot be done cleanly in Wasm, use a small JavaScript interop bridge and explain the choice in DECISIONS.md.
 

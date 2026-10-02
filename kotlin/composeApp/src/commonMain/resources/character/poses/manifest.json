@@ -1,0 +1,407 @@
+{
+  "source": "character-source.svg",
+  "fallback": false,
+  "canvas": {
+    "x": 0.0,
+    "y": 0.0,
+    "width": 750.0,
+    "height": 500.0
+  },
+  "strategy": "geometric-figure-detection",
+  "poses": [
+    {
+      "name": "idle",
+      "file": "pose-idle.svg",
+      "viewBox": "9.720 14.712 150.060 256.360",
+      "width": 150.06,
+      "height": 256.36,
+      "paths": 53,
+      "sizeKB": 16,
+      "sourceComponent": {
+        "x0": 39.0,
+        "y0": 32.0,
+        "x1": 130.5,
+        "y1": 248.0,
+        "areaPx": 33357
+      },
+      "renderedBBox": {
+        "x0": 39.2,
+        "x1": 130.7,
+        "y0": 31.7,
+        "y1": 247.7
+      },
+      "silhouette": [
+        {
+          "band": 0,
+          "widthRatio": 0.133,
+          "centerXRatio": 0.513
+        },
+        {
+          "band": 1,
+          "widthRatio": 0.333,
+          "centerXRatio": 0.48
+        },
+        {
+          "band": 2,
+          "widthRatio": 0.44,
+          "centerXRatio": 0.507
+        },
+        {
+          "band": 3,
+          "widthRatio": 0.48,
+          "centerXRatio": 0.567
+        },
+        {
+          "band": 4,
+          "widthRatio": 0.32,
+          "centerXRatio": 0.46
+        },
+        {
+          "band": 5,
+          "widthRatio": 0.373,
+          "centerXRatio": 0.447
+        },
+        {
+          "band": 6,
+          "widthRatio": 0.413,
+          "centerXRatio": 0.427
+        },
+        {
+          "band": 7,
+          "widthRatio": 0.533,
+          "centerXRatio": 0.46
+        }
+      ],
+      "index": 0
+    },
+    {
+      "name": "wave",
+      "file": "pose-wave.svg",
+      "viewBox": "138.220 14.712 150.060 256.360",
+      "width": 150.06,
+      "height": 256.36,
+      "paths": 53,
+      "sizeKB": 17,
+      "sourceComponent": {
+        "x0": 165.5,
+        "y0": 27.5,
+        "x1": 261.0,
+        "y1": 248.0,
+        "areaPx": 34751
+      },
+      "renderedBBox": {
+        "x0": 165.7,
+        "x1": 261.2,
+        "y0": 27.2,
+        "y1": 247.7
+      },
+      "silhouette": [
+        {
+          "band": 0,
+          "widthRatio": 0.347,
+          "centerXRatio": 0.607
+        },
+        {
+          "band": 1,
+          "widthRatio": 0.573,
+          "centerXRatio": 0.533
+        },
+        {
+          "band": 2,
+          "widthRatio": 0.587,
+          "centerXRatio": 0.5
+        },
+        {
+          "band": 3,
+          "widthRatio": 0.293,
+          "centerXRatio": 0.46
+        },
+        {
+          "band": 4,
+          "widthRatio": 0.32,
+          "centerXRatio": 0.447
+        },
+        {
+          "band": 5,
+          "widthRatio": 0.373,
+          "centerXRatio": 0.433
+        },
+        {
+          "band": 6,
+          "widthRatio": 0.413,
+          "centerXRatio": 0.413
+        },
+        {
+          "band": 7,
+          "widthRatio": 0.533,
+          "centerXRatio": 0.447
+        }
+      ],
+      "index": 1
+    },
+    {
+      "name": "thinking",
+      "file": "pose-thinking.svg",
+      "viewBox": "257.970 14.712 150.060 256.360",
+      "width": 150.06,
+      "height": 256.36,
+      "paths": 53,
+      "sizeKB": 17,
+      "sourceComponent": {
+        "x0": 290.0,
+        "y0": 32.0,
+        "x1": 376.0,
+        "y1": 248.0,
+        "areaPx": 33945
+      },
+      "renderedBBox": {
+        "x0": 290.0,
+        "x1": 376.0,
+        "y0": 31.7,
+        "y1": 247.7
+      },
+      "silhouette": [
+        {
+          "band": 0,
+          "widthRatio": 0.133,
+          "centerXRatio": 0.527
+        },
+        {
+          "band": 1,
+          "widthRatio": 0.427,
+          "centerXRatio": 0.5
+        },
+        {
+          "band": 2,
+          "widthRatio": 0.56,
+          "centerXRatio": 0.513
+        },
+        {
+          "band": 3,
+          "widthRatio": 0.347,
+          "centerXRatio": 0.513
+        },
+        {
+          "band": 4,
+          "widthRatio": 0.32,
+          "centerXRatio": 0.487
+        },
+        {
+          "band": 5,
+          "widthRatio": 0.36,
+          "centerXRatio": 0.467
+        },
+        {
+          "band": 6,
+          "widthRatio": 0.413,
+          "centerXRatio": 0.453
+        },
+        {
+          "band": 7,
+          "widthRatio": 0.52,
+          "centerXRatio": 0.48
+        }
+      ],
+      "index": 2
+    },
+    {
+      "name": "celebrating",
+      "file": "pose-celebrating.svg",
+      "viewBox": "19.970 239.712 150.060 256.360",
+      "width": 150.06,
+      "height": 256.36,
+      "paths": 55,
+      "sizeKB": 18,
+      "sourceComponent": {
+        "x0": 53.5,
+        "y0": 256.0,
+        "x1": 136.5,
+        "y1": 473.0,
+        "areaPx": 31971
+      },
+      "renderedBBox": {
+        "x0": 53.5,
+        "x1": 136.5,
+        "y0": 255.7,
+        "y1": 472.7
+      },
+      "silhouette": [
+        {
+          "band": 0,
+          "widthRatio": 0.133,
+          "centerXRatio": 0.447
+        },
+        {
+          "band": 1,
+          "widthRatio": 0.493,
+          "centerXRatio": 0.52
+        },
+        {
+          "band": 2,
+          "widthRatio": 0.48,
+          "centerXRatio": 0.513
+        },
+        {
+          "band": 3,
+          "widthRatio": 0.293,
+          "centerXRatio": 0.433
+        },
+        {
+          "band": 4,
+          "widthRatio": 0.347,
+          "centerXRatio": 0.447
+        },
+        {
+          "band": 5,
+          "widthRatio": 0.373,
+          "centerXRatio": 0.433
+        },
+        {
+          "band": 6,
+          "widthRatio": 0.387,
+          "centerXRatio": 0.427
+        },
+        {
+          "band": 7,
+          "widthRatio": 0.48,
+          "centerXRatio": 0.46
+        }
+      ],
+      "index": 3
+    },
+    {
+      "name": "encouraging",
+      "file": "pose-encouraging.svg",
+      "viewBox": "148.720 238.712 150.060 256.360",
+      "width": 150.06,
+      "height": 256.36,
+      "paths": 56,
+      "sizeKB": 19,
+      "sourceComponent": {
+        "x0": 162.5,
+        "y0": 256.0,
+        "x1": 285.0,
+        "y1": 472.0,
+        "areaPx": 36091
+      },
+      "renderedBBox": {
+        "x0": 162.2,
+        "x1": 285.2,
+        "y0": 255.7,
+        "y1": 471.7
+      },
+      "silhouette": [
+        {
+          "band": 0,
+          "widthRatio": 0.52,
+          "centerXRatio": 0.6
+        },
+        {
+          "band": 1,
+          "widthRatio": 0.747,
+          "centerXRatio": 0.54
+        },
+        {
+          "band": 2,
+          "widthRatio": 0.64,
+          "centerXRatio": 0.433
+        },
+        {
+          "band": 3,
+          "widthRatio": 0.293,
+          "centerXRatio": 0.367
+        },
+        {
+          "band": 4,
+          "widthRatio": 0.333,
+          "centerXRatio": 0.36
+        },
+        {
+          "band": 5,
+          "widthRatio": 0.373,
+          "centerXRatio": 0.34
+        },
+        {
+          "band": 6,
+          "widthRatio": 0.4,
+          "centerXRatio": 0.327
+        },
+        {
+          "band": 7,
+          "widthRatio": 0.533,
+          "centerXRatio": 0.353
+        }
+      ],
+      "index": 4
+    },
+    {
+      "name": "walk",
+      "file": "pose-walk.svg",
+      "viewBox": "262.720 237.212 150.060 256.360",
+      "width": 150.06,
+      "height": 256.36,
+      "paths": 51,
+      "sizeKB": 17,
+      "sourceComponent": {
+        "x0": 283.5,
+        "y0": 256.0,
+        "x1": 392.0,
+        "y1": 470.5,
+        "areaPx": 32523
+      },
+      "renderedBBox": {
+        "x0": 283.2,
+        "x1": 391.7,
+        "y0": 255.7,
+        "y1": 470.2
+      },
+      "silhouette": [
+        {
+          "band": 0,
+          "widthRatio": 0.133,
+          "centerXRatio": 0.473
+        },
+        {
+          "band": 1,
+          "widthRatio": 0.373,
+          "centerXRatio": 0.433
+        },
+        {
+          "band": 2,
+          "widthRatio": 0.56,
+          "centerXRatio": 0.46
+        },
+        {
+          "band": 3,
+          "widthRatio": 0.72,
+          "centerXRatio": 0.5
+        },
+        {
+          "band": 4,
+          "widthRatio": 0.253,
+          "centerXRatio": 0.507
+        },
+        {
+          "band": 5,
+          "widthRatio": 0.267,
+          "centerXRatio": 0.513
+        },
+        {
+          "band": 6,
+          "widthRatio": 0.467,
+          "centerXRatio": 0.493
+        },
+        {
+          "band": 7,
+          "widthRatio": 0.467,
+          "centerXRatio": 0.547
+        }
+      ],
+      "index": 5
+    }
+  ],
+  "droppedPaths": 379,
+  "notes": [
+    "Pose names are assigned in sheet reading order (row-major). The EPS conversion does not preserve Illustrator layer names, so the mapping is positional - re-run with --names to remap."
+  ]
+}

@@ -1,7 +1,7 @@
 # Rules for The Endless Book Kotlin rebuild
 
 Scope
-- The existing Next.js and FastAPI code in apps, scripts, infra and docs is a read only reference. Never modify or delete it.
+- The existing Next.js and FastAPI code in legacy/apps, legacy/scripts, legacy/infra and docs is a read only reference. Never modify or delete it.
 - All new code goes in a folder named kotlin at the project root, with its own settings.gradle.kts and Gradle wrapper.
 - Never open, print or copy the contents of .env. Use .env.example for key names only. Never commit secrets.
 - The full plan lives in docs/MASTER_PROMPT.md. Read it before starting any phase. Work on one phase at a time and stop when it is done.

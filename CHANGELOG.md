@@ -210,3 +210,9 @@ all seven files).
 - Seed script with chapter one and 3 sample chapters
 - Unit tests for API routers and agents
 - Moderation flow tests
+# 2026-10-02
+
+- Added the Phase 1B Kotlin-only layout, Ktor root/health/readiness endpoints,
+  server tests, and a Compose Multiplatform Wasm landing client.
+- Archived the previous Next.js/FastAPI application, scripts, package manifests,
+  and deployment Docker/Cloud Build files under `legacy/`.

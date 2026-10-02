@@ -1,5 +1,28 @@
 # What I Saw When I Was a Kid
 
+## Active Kotlin project
+
+The active implementation is now in [`kotlin/`](kotlin/). The previous
+Next.js/FastAPI stack is archived as read-only reference in [`legacy/`](legacy/)
+and is preserved by the `legacy-nextjs-fastapi` Git tag.
+
+Run the Kotlin server:
+
+```bash
+cd kotlin
+./gradlew :server:run
+```
+
+Run the Compose Multiplatform web client:
+
+```bash
+cd kotlin
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+```
+
+Open http://localhost:8080/ for the API and http://localhost:8081/ for the
+browser client.
+
 An endless book of childhood memories. Every chapter is exactly 3 pages, written by a real person. Chapter one is by the founder, Sanjay. After that, anyone can sign in and add the next chapter. The book never ends.
 
 ## Quick Start
@@ -11,7 +34,7 @@ An endless book of childhood memories. Every chapter is exactly 3 pages, written
 - A Google Cloud project with billing enabled
 - `gcloud` CLI authenticated
 
-### Local Development
+### Archived stack reference
 
 ```bash
 # 1. Clone and install
@@ -21,11 +44,11 @@ cp .env.example .env
 # Fill in .env with your values
 
 # 2. Install dependencies
-cd apps/web && npm install
+cd legacy/apps/web && npm install
 cd ../api && uv pip install -e ".[dev]"
 
 # 3. Run both services
-cd ../.. && npm run dev
+cd ../../.. && npm run dev
 ```
 
 - Web: http://localhost:3000
@@ -35,7 +58,7 @@ cd ../.. && npm run dev
 ### Seed the Database
 
 ```bash
-cd apps/api
+cd legacy/apps/api
 uv run python seed.py
 ```
 
@@ -45,8 +68,9 @@ This creates chapter one (The Wheel Cart of Bangles) and three sample chapters.
 
 ```
 .
-├── apps/
-│   ├── web/              # Next.js frontend
+├── legacy/
+│   ├── apps/
+│   │   ├── web/              # Next.js frontend
 │   │   ├── src/
 │   │   │   ├── app/      # Pages (App Router)
 │   │   │   ├── components/
@@ -56,16 +80,16 @@ This creates chapter one (The Wheel Cart of Bangles) and three sample chapters.
 │   │   │   ├── lib/      # Utilities, API client, auth
 │   │   │   └── styles/   # Global CSS with design tokens
 │   │   └── public/
-│   └── api/              # FastAPI backend
-│       ├── app/
+│   │   └── api/              # FastAPI backend
+│   │       ├── app/
 │       │   ├── main.py   # App entry point
 │       │   ├── routers/  # API endpoints
 │       │   ├── services/ # Google Cloud services
 │       │   ├── agents/   # ADK agents (Page Weaver, Moderator)
 │       │   ├── models/   # Pydantic schemas
 │       │   └── core/     # Config, auth, logging
-│       └── tests/        # Pytest tests
-├── infra/                # Dockerfiles, Cloud Build, Firestore rules
+│   │       └── tests/        # Pytest tests
+├── infra/                # Firestore rules, indexes, and Pub/Sub notes
 └── docs/                 # Documentation
 ```
 

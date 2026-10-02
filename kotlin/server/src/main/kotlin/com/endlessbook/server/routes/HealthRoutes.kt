@@ -10,11 +10,11 @@ import io.ktor.server.routing.routing
 fun Application.healthRoutes() {
     routing {
         get("/health") {
-            call.respond(HttpStatusCode.OK, HealthResponse(status = "ok", service = "server", environment = "local"))
+            call.respond(HttpStatusCode.OK, HealthResponse(status = "ok"))
         }
 
         get("/ready") {
-            call.respond(HttpStatusCode.OK, HealthResponse(status = "ready", service = "server", environment = "local"))
+            call.respond(HttpStatusCode.OK, HealthResponse(status = "ready"))
         }
     }
 }
