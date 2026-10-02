@@ -1,7 +1,10 @@
 package com.endlessbook.server
 
 import com.endlessbook.server.config.serverModule
-import com.endlessbook.server.routes.healthRoutes
+import com.endlessbook.server.plugins.configureCallLogging
+import com.endlessbook.server.plugins.configureStatusPages
+import com.endlessbook.server.routes.*
+import com.endlessbook.server.domain.ChapterRepository
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -17,6 +20,7 @@ import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import org.koin.ktor.ext.inject
 
 fun main() {
     embeddedServer(Netty, port = System.getenv("PORT")?.toIntOrNull() ?: 8080) {
@@ -34,7 +38,8 @@ fun Application.module() {
             },
         )
     }
-    install(CallLogging)
+    configureCallLogging()
+    configureStatusPages()
     install(CORS) {
         val configuredOrigins = (System.getenv("CORS_ORIGINS") ?: "http://localhost:8081,http://localhost:3000")
             .split(",")
@@ -49,13 +54,16 @@ fun Application.module() {
         slf4jLogger()
         modules(serverModule)
     }
-    install(StatusPages) {
-        exception<Throwable> { call, cause ->
-            call.respondText(text = "Internal Server Error: ${cause.message}", status = io.ktor.http.HttpStatusCode.InternalServerError)
-        }
-    }
+
+    val chapterRepo by inject<ChapterRepository>()
 
     healthRoutes()
+    chaptersRoutes(chapterRepo)
+    adminRoutes(chapterRepo)
+    agentRoutes()
+    searchRoutes(chapterRepo)
+    internalRoutes()
+    adminExportRoutes(chapterRepo)
 
     routing {
         get("/") {

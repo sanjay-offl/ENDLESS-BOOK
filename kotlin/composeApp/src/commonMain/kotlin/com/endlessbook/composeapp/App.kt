@@ -1,14 +1,22 @@
 package com.endlessbook.composeapp
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,46 +44,74 @@ import kotlinx.serialization.json.Json
 private val Canvas = Color(0xFFF6F3EC)
 private val Ink = Color(0xFF0B0A09)
 private val Accent = Color(0xFFE8B93C)
+private val Muted = Color(0xFF6B675F)
+private val Hairline = Color(0x1F0B0A09)
 
 data class ClientConfig(val apiBaseUrl: String = "http://localhost:8080")
 
 @Composable
 fun App(config: ClientConfig = ClientConfig()) {
     var apiStatus by remember { mutableStateOf("API offline") }
+    var openFaq by remember { mutableStateOf<Int?>(null) }
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(config.apiBaseUrl) {
         apiStatus = checkApiHealth(config.apiBaseUrl)
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Canvas).padding(32.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Canvas)
+            .verticalScroll(scrollState)
+            .padding(horizontal = 32.dp, vertical = 28.dp),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "THE ENDLESS BOOK",
+                color = Ink,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 2.sp,
+            )
+            Text(
+                text = "A living archive",
+                color = Muted,
+                fontSize = 12.sp,
+            )
+        }
+
+        Spacer(Modifier.height(96.dp))
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Text(
                 text = "A BOOK THAT NEVER ENDS",
-                color = Ink.copy(alpha = .58f),
+                color = Muted,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 2.sp,
             )
             Text(
-                text = "What I Saw When I Was a Kid",
+                text = "What I Saw\nWhen I Was a Kid",
                 color = Ink,
-                fontSize = 56.sp,
+                fontSize = 58.sp,
                 lineHeight = 58.sp,
                 fontStyle = FontStyle.Italic,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
                 fontWeight = FontWeight.Normal,
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("●", color = Accent, fontSize = 24.sp)
+            Row(verticalAlignment = Alignment.Top) {
+                Text("●", color = Accent, fontSize = 20.sp)
+                Spacer(Modifier.width(10.dp))
                 Text(
-                    text = " An endless book of childhood memories, shared one chapter at a time.",
-                    color = Ink.copy(alpha = .72f),
+                    text = "Childhood memories, shared one chapter at a time.",
+                    color = Muted,
                     fontSize = 17.sp,
                     lineHeight = 26.sp,
                 )
@@ -84,13 +120,145 @@ fun App(config: ClientConfig = ClientConfig()) {
                 onClick = {},
                 colors = ButtonDefaults.buttonColors(containerColor = Ink, contentColor = Canvas),
             ) {
-                Text("Read Chapter 1")
+                Text("Read chapter one")
             }
         }
+
+        Spacer(Modifier.height(144.dp))
+        EditorialSection(
+            eyebrow = "The book",
+            title = "You remember it.\nYou write it in three pages.",
+            body = "A quiet place for the details that stay with us: a street after rain, a familiar voice, the small rituals of an ordinary day.",
+        )
+
+        Spacer(Modifier.height(120.dp))
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "3",
+                color = Ink,
+                fontSize = 180.sp,
+                lineHeight = 150.sp,
+                fontStyle = FontStyle.Italic,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+            )
+        }
         Text(
-            text = apiStatus,
-            color = Ink.copy(alpha = .58f),
+            text = "Every chapter is exactly three pages.\nLong enough to remember. Short enough to return to.",
+            color = Muted,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(Modifier.height(120.dp))
+        EditorialSection(
+            eyebrow = "A shared memory",
+            title = "The world reads it.",
+            body = "Chapter one begins with The Wheel Cart of Bangles. The next chapter can be yours.",
+        )
+
+        Spacer(Modifier.height(120.dp))
+        Text(
+            text = "Questions",
+            color = Muted,
             fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 2.sp,
+        )
+        Spacer(Modifier.height(16.dp))
+        listOf(
+            "What is The Endless Book?" to "A growing collection of real childhood memories.",
+            "How long is a chapter?" to "Each chapter has three pages and takes about two to three minutes to read.",
+            "Can I add my own memory?" to "Yes. Sign in, write your three pages, and send them for review.",
+        ).forEachIndexed { index, (question, answer) ->
+            HorizontalDivider(color = Hairline)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { openFaq = if (openFaq == index) null else index }
+                    .padding(vertical = 18.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(question, color = Ink, fontSize = 16.sp)
+                    Text(
+                        text = if (openFaq == index) "−" else "+",
+                        color = Ink,
+                        fontSize = 20.sp,
+                    )
+                }
+                if (openFaq == index) {
+                    Spacer(Modifier.height(10.dp))
+                    Text(answer, color = Muted, fontSize = 15.sp, lineHeight = 23.sp)
+                }
+            }
+            if (index == 2) HorizontalDivider(color = Hairline)
+        }
+
+        Spacer(Modifier.height(120.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text(
+                text = "A place for what remains.",
+                color = Ink,
+                fontSize = 34.sp,
+                lineHeight = 36.sp,
+                fontStyle = FontStyle.Italic,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+            )
+            Text(
+                text = "Made with care by Sanjay.",
+                color = Muted,
+                fontSize = 14.sp,
+            )
+            Text(
+                text = apiStatus,
+                color = Muted,
+                fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Spacer(Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun EditorialSection(
+    eyebrow: String,
+    title: String,
+    body: String,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        Text(
+            text = eyebrow.uppercase(),
+            color = Muted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 2.sp,
+        )
+        Text(
+            text = title,
+            color = Ink,
+            fontSize = 40.sp,
+            lineHeight = 41.sp,
+            fontStyle = FontStyle.Italic,
+            fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+        )
+        Text(
+            text = body,
+            color = Muted,
+            fontSize = 17.sp,
+            lineHeight = 27.sp,
             modifier = Modifier.fillMaxWidth(),
         )
     }
