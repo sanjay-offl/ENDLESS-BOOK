@@ -6,7 +6,7 @@ export function useMemory(id?: string) {
   const [memory, setMemory] = useState<Memory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const contributor = useContributor();
+  const { contributor } = useContributor();
 
   const loadMemory = useCallback(async () => {
     if (!id) return;
@@ -40,7 +40,7 @@ export function useUserMemories(uid?: string) {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const contributor = useContributor();
+  const { contributor } = useContributor();
 
   const loadUserMemories = useCallback(async () => {
     if (!uid) {
