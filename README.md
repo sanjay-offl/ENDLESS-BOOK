@@ -22,3 +22,19 @@ npm run dev:web
 ```
 
 The API will be added to the local command once its Gradle wrapper is generated. Until then, install Gradle on Ubuntu with `sudo apt-get update && sudo apt-get install -y gradle`, then run `cd apps/api && gradle wrapper --gradle-version 8.10`.
+
+## Deploy the web app to Vercel
+
+The Vercel configuration in [`vercel.json`](./vercel.json) builds the Next.js app in `apps/web`. To deploy from GitHub:
+
+1. Import this repository at [vercel.com/new](https://vercel.com/new).
+2. Keep the project root at the repository root. The checked-in configuration runs the install and build commands for `apps/web`.
+3. Add the variables from `.env.example` in **Project Settings → Environment Variables**. Use the Firebase values from the Firebase console; do not commit `.env.local`.
+4. Set `NEXT_PUBLIC_API_URL` to the deployed API URL if the web app uses the API in that environment.
+5. Deploy.
+
+For a local production check, run:
+
+```bash
+npm run build:web
+```
