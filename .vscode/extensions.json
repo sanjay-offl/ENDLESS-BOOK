@@ -5,7 +5,6 @@
     "vscjava.vscode-java-pack",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "bradlc.vscode-tailwindcss",
     "toba.vsfire"
   ]
 }

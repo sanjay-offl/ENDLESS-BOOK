@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   signInWithEmailAndPassword,
@@ -9,6 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "../../firebase";
+import { setDemoUser } from "../../demoSession";
 import Button from "../ui/Button";
 
 export default function LoginForm() {
@@ -44,9 +45,12 @@ export default function LoginForm() {
       handleSuccess();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Authentication failed.";
-      // If Firebase key is not configured, offer demo sign in
-      if (msg.includes("api-key") || msg.includes("network")) {
-        setError("Note: Firebase Auth credentials are using offline dev mode. You can click 'Demo Contributor Access' below.");
+      // With no real API key the Firebase SDK rejects the request outright, so point the
+      // visitor at the demo path instead of showing a raw SDK error.
+      if (msg.includes("api-key") || msg.includes("auth/invalid-api-key") || msg.includes("network")) {
+        setError(
+          "Firebase Auth is not configured in this environment. Use 'Continue as Demo Contributor' below to explore the book."
+        );
       } else {
         setError(msg);
       }
@@ -64,8 +68,10 @@ export default function LoginForm() {
       handleSuccess();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Google Sign-In failed.";
-      if (msg.includes("api-key") || msg.includes("network") || msg.includes("popup")) {
-        setError("Note: Firebase Auth credentials are using offline dev mode. You can click 'Demo Contributor Access' below.");
+      if (msg.includes("api-key") || msg.includes("popup-closed") || msg.includes("network")) {
+        setError(
+          "Google sign-in is unavailable in this environment. Use 'Continue as Demo Contributor' below to explore the book."
+        );
       } else {
         setError(msg);
       }
@@ -75,11 +81,12 @@ export default function LoginForm() {
   };
 
   const handleDemoSignIn = () => {
-    // Allows testing all features without requiring real Firebase API keys
-    localStorage.setItem("endless_book_demo_user", JSON.stringify({
-      displayName: displayName || "Elena Vance",
-      email: email || "elena@example.com",
-    }));
+    // Lets the whole flow be tested without real Firebase credentials. The API only
+    // accepts these tokens while it is itself running without credentials.
+    setDemoUser({
+      displayName: displayName.trim() || "Elena Vance",
+      email: email.trim() || "elena@example.com",
+    });
     handleSuccess();
   };
 
@@ -151,7 +158,7 @@ export default function LoginForm() {
           gap: "0.75rem",
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
           <path
             fill="#4285F4"
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -272,6 +279,7 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={6}
             className="editorial-input"
           />
         </div>
@@ -313,12 +321,15 @@ export default function LoginForm() {
         </button>
       </div>
 
-      {/* Dev Demo Fallback Access */}
+      {/* Demo Fallback Access */}
       <div
         style={{
           borderTop: "var(--border-thin) solid var(--color-rule)",
           paddingTop: "1rem",
           textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.75rem",
         }}
       >
         <button
@@ -335,8 +346,24 @@ export default function LoginForm() {
             cursor: "pointer",
           }}
         >
-          [ DEV ONLY: CONTINUE AS DEMO CONTRIBUTOR ]
+          CONTINUE AS DEMO CONTRIBUTOR
         </button>
+        <span
+          style={{
+            fontFamily: "var(--font-body)",
+            fontStyle: "italic",
+            fontSize: "var(--text-xxs)",
+            color: "var(--color-ink)",
+            opacity: 0.65,
+          }}
+        >
+          Works without Firebase credentials, but contributions are only stored in memory
+          by the local API.{" "}
+          <Link to="/chapters" className="link-draw">
+            Keep reading
+          </Link>
+          .
+        </span>
       </div>
     </div>
   );

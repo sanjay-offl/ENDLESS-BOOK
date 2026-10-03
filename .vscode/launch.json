@@ -5,14 +5,20 @@
       "name": "Ktor API",
       "type": "java",
       "request": "launch",
-      "mainClass": "app.endless.ApplicationKt",
-      "projectName": "endless-ebook-api"
+      "mainClass": "com.endlessbook.ApplicationKt",
+      "projectName": "backend"
     },
     {
-      "name": "Next.js",
+      "name": "Frontend (Vite)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm run dev:web"
+      "command": "npm run dev:frontend"
+    },
+    {
+      "name": "Dev (frontend + API)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev"
     }
   ]
 }

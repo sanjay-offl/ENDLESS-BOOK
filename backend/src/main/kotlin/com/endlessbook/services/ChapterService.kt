@@ -3,16 +3,23 @@ package com.endlessbook.services
 import com.endlessbook.firebase.FirebaseAdmin
 import com.endlessbook.models.*
 import com.google.cloud.firestore.Query
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Reads and writes chapters.
+ *
+ * Every method falls back to the in-memory seed data in the companion object when
+ * Firestore is unavailable, so the API stays usable without Firebase credentials.
+ */
 class ChapterService {
     private val db get() = FirebaseAdmin.firestore
 
     suspend fun getAllChapters(): List<Chapter> = withContext(Dispatchers.IO) {
+        val firestore = db
+        if (firestore == null) return@withContext fallbackChapters
         try {
-            db.collection("chapters")
+            firestore.collection("chapters")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get().get().documents
                 .map { it.toObject(Chapter::class.java).copy(id = it.id) }
@@ -22,69 +29,76 @@ class ChapterService {
     }
 
     suspend fun getChapterWithMemories(id: String): ChapterDetail? = withContext(Dispatchers.IO) {
+        val firestore = db
+        if (firestore == null) return@withContext offlineChapterDetail(id)
+
         try {
-            val doc = db.collection("chapters").document(id).get().get()
-            if (!doc.exists()) {
-                val fallback = fallbackChapters.find { it.id == id } ?: return@withContext null
-                val mems = fallbackMemories.filter { it.chapterId == id }
-                return@withContext ChapterDetail(fallback, mems)
-            }
+            val doc = firestore.collection("chapters").document(id).get().get()
+            if (!doc.exists()) return@withContext offlineChapterDetail(id)
+
             val chapter = doc.toObject(Chapter::class.java)!!.copy(id = doc.id)
-            val memories = db.collection("memories")
+            val memories = firestore.collection("memories")
                 .whereEqualTo("chapterId", id)
                 .orderBy("pageNum")
                 .get().get().documents
                 .map { it.toObject(Memory::class.java).copy(id = it.id) }
             ChapterDetail(chapter, memories)
         } catch (e: Exception) {
-            val fallback = fallbackChapters.find { it.id == id } ?: return@withContext null
-            val mems = fallbackMemories.filter { it.chapterId == id }
-            ChapterDetail(fallback, mems)
+            offlineChapterDetail(id)
         }
     }
 
     suspend fun createChapter(data: NewChapter, uid: String): Chapter = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        val displayName = try {
-            FirebaseAuth.getInstance().getUser(uid).displayName ?: "Anonymous"
-        } catch (e: Exception) {
-            "Community Contributor"
+        val displayName = FirebaseService().getUser(uid)?.displayName ?: "Community Contributor"
+
+        val firestore = db
+        if (firestore != null) {
+            try {
+                val existing = firestore.collection("chapters").get().get().documents
+                val chapter = Chapter(
+                    number = existing.size + 1,
+                    title = data.title,
+                    founderId = uid,
+                    founderName = displayName,
+                    founderCity = "",
+                    pageCount = 0,
+                    isOpen = true,
+                    tags = data.tags,
+                    createdAt = now,
+                    updatedAt = now,
+                )
+                val ref = firestore.collection("chapters").add(chapter).get()
+                return@withContext chapter.copy(id = ref.id)
+            } catch (e: Exception) {
+                // Fall through to the offline branch below.
+            }
         }
 
-        try {
-            val count = db.collection("chapters").get().get().size()
-            val chapter = Chapter(
-                number = count + 1,
-                title = data.title,
-                founderId = uid,
-                founderName = displayName,
-                founderCity = "",
-                pageCount = 0,
-                isOpen = true,
-                tags = data.tags,
-                createdAt = now,
-                updatedAt = now,
-            )
-            val ref = db.collection("chapters").add(chapter).get()
-            chapter.copy(id = ref.id)
-        } catch (e: Exception) {
-            val count = fallbackChapters.size
-            val fallback = Chapter(
-                id = "chapter-${count + 1}",
-                number = count + 1,
-                title = data.title,
-                founderId = uid,
-                founderName = displayName,
-                founderCity = "",
-                pageCount = 0,
-                isOpen = true,
-                tags = data.tags,
-                createdAt = now,
-                updatedAt = now,
-            )
-            fallbackChapters.add(0, fallback)
-            fallback
+        val number = fallbackChapters.maxOfOrNull { it.number }?.plus(1) ?: 1
+        val chapter = Chapter(
+            id = "chapter-$number",
+            number = number,
+            title = data.title,
+            founderId = uid,
+            founderName = displayName,
+            founderCity = "",
+            pageCount = 0,
+            isOpen = true,
+            tags = data.tags,
+            createdAt = now,
+            updatedAt = now,
+        )
+        synchronized(fallbackChapters) { fallbackChapters.add(0, chapter) }
+        chapter
+    }
+
+    private fun offlineChapterDetail(id: String): ChapterDetail? {
+        val chapter = fallbackChapters.find { it.id == id } ?: return null
+        val memories = synchronized(fallbackMemories) {
+            fallbackMemories.filter { it.chapterId == id }.sortedBy { it.pageNum }
         }
+        return ChapterDetail(chapter, memories)
     }
 
     companion object {

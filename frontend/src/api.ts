@@ -45,9 +45,15 @@ export interface ChapterDetail {
   memories: Memory[];
 }
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+const BASE = import.meta.env.VITE_API_URL ?? "";
 
-// Fallback seed data if the backend is not yet started or running offline
+/**
+ * Token used for the API's offline auth mode, which is only active when the backend has
+ * no Firebase credentials. A real session sends the actual Firebase ID token instead.
+ */
+export const DEMO_AUTH_TOKEN = "anonymous-token";
+
+// Seed data used when the API is not configured or not running. Only read paths resolve here.
 const fallbackChapters: Chapter[] = [
   {
     id: "chapter-1",
@@ -171,38 +177,85 @@ const fallbackMemories: Memory[] = [
   },
 ];
 
+function fallbackJSON<T>(path: string, options?: RequestInit): T {
+  if (path === "/api/chapters") {
+    return fallbackChapters as unknown as T;
+  }
+  if (path.startsWith("/api/chapters/")) {
+    const id = path.replace("/api/chapters/", "");
+    const chapter = fallbackChapters.find((c) => c.id === id);
+    if (!chapter) {
+      throw new Error(`Chapter ${id} was not found.`);
+    }
+    const memories = fallbackMemories.filter((m) => m.chapterId === chapter.id);
+    return { chapter, memories } as unknown as T;
+  }
+  if (path.startsWith("/api/memories/")) {
+    const id = path.replace("/api/memories/", "");
+    const memory = fallbackMemories.find((m) => m.id === id);
+    if (!memory) {
+      throw new Error(`Memory ${id} was not found.`);
+    }
+    return memory as unknown as T;
+  }
+  if (path.includes("/memories") && options?.method === "GET") {
+    return fallbackMemories as unknown as T;
+  }
+  throw new Error("API URL is not configured.");
+}
+
 async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
+  const isWrite = options?.method !== undefined && options.method !== "GET";
+
+  // Writes must reach a real API. Resolving them from the seed data would make a
+  // contribution look like it succeeded and then disappear on reload.
+  if (!BASE && !isWrite) {
+    return fallbackJSON<T>(path, options);
+  }
+
   try {
     const res = await fetch(`${BASE}${path}`, {
-      headers: { "Content-Type": "application/json", ...options?.headers },
       ...options,
+      // Merged after the spread on purpose: `options.headers` would otherwise replace
+      // this object outright and drop Content-Type, which the API needs to parse a POST body.
+      headers: { "Content-Type": "application/json", ...options?.headers },
     });
+
     if (!res.ok) {
-      throw new Error(`API error ${res.status}`);
+      throw new Error(await readErrorMessage(res, `API error ${res.status}`));
+    }
+
+    if (res.status === 204) {
+      return undefined as T;
     }
     return await res.json();
   } catch (err) {
-    // If backend is not reached or error occurs, provide graceful fallback
+    if (isWrite) {
+      throw err instanceof Error ? err : new Error("Request failed");
+    }
     console.warn(`Fetch error for ${path}, using local repository fallback.`, err);
-    if (path === "/api/chapters") {
-      return fallbackChapters as unknown as T;
-    }
-    if (path.startsWith("/api/chapters/")) {
-      const id = path.replace("/api/chapters/", "");
-      const chapter = fallbackChapters.find((c) => c.id === id) || fallbackChapters[0];
-      const memories = fallbackMemories.filter((m) => m.chapterId === chapter.id);
-      return { chapter, memories } as unknown as T;
-    }
-    if (path.startsWith("/api/memories/")) {
-      const id = path.replace("/api/memories/", "");
-      const memory = fallbackMemories.find((m) => m.id === id) || fallbackMemories[0];
-      return memory as unknown as T;
-    }
-    if (path.includes("/memories") && options?.method === "GET") {
-      return fallbackMemories as unknown as T;
-    }
-    throw err;
+    return fallbackJSON<T>(path, options);
   }
+}
+
+/**
+ * Prefers the API's own `error` field so the UI shows a useful reason instead of a bare
+ * status code.
+ */
+async function readErrorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const body = await res.json();
+    if (body && typeof body.error === "string" && body.error) {
+      return body.error;
+    }
+  } catch {
+    // Empty or non-JSON body: keep the status-based message.
+  }
+  return fallback;
+}
+
+function bearer(token: string): string {
+  return `Bearer ${token}`;
 }
 
 export const api = {
@@ -213,16 +266,16 @@ export const api = {
     fetchJSON<Chapter>("/api/chapters", {
       method: "POST",
       body: JSON.stringify(data),
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: bearer(token) },
     }),
   createMemory: (data: NewMemory, token: string) =>
     fetchJSON<Memory>("/api/memories", {
       method: "POST",
       body: JSON.stringify(data),
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: bearer(token) },
     }),
   getUserMemories: (uid: string, token: string) =>
     fetchJSON<Memory[]>(`/api/users/${uid}/memories`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: bearer(token) },
     }),
 };

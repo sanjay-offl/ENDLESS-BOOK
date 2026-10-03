@@ -17,6 +17,7 @@ interface MemoryCardProps {
 }
 
 export default function MemoryCard({
+  memoryId,
   chapterId,
   pageNum,
   title,
@@ -39,8 +40,11 @@ export default function MemoryCard({
 
   const displayExcerpt = excerpt || body || "";
 
+  // Prefers the memory id so the route stays correct even if page numbering shifts.
+  const target = memoryId ? `/memories/${memoryId}` : `/chapters/${chapterId}/${pageNum}`;
+
   const handleClick = () => {
-    navigate(`/chapters/${chapterId}/${pageNum}`);
+    navigate(target);
   };
 
   return (
@@ -110,7 +114,7 @@ export default function MemoryCard({
         )}
 
         <Link
-          to={`/chapters/${chapterId}/${pageNum}`}
+          to={target}
           onClick={(e) => e.stopPropagation()}
           className="link-draw"
           style={{

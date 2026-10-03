@@ -16,6 +16,8 @@ fun main() {
 }
 
 fun Application.module() {
+    // Installed before the routes so that every failure is rendered as JSON.
+    configureStatusPages()
     FirebaseAdmin.initialize()
     configureSerialization()
     configureCORS()

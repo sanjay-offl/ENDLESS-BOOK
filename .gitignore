@@ -19,14 +19,12 @@ service-account*.json
 .ruff_cache/
 .mypy_cache/
 .DS_Store
-apps/web/.next/
-apps/api/.venv/
-apps/api/__pycache__/
+.venv/
 .venv-tools/
-\{src*
 .kotlin/
 .idea/
 *.iml
+*.tsbuildinfo
 
 # Vite frontend build output
 frontend/dist/

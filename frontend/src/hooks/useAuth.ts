@@ -21,8 +21,10 @@ export function useAuth() {
           setToken(t);
           setStoreToken(t);
         } catch {
-          setToken("mock-token");
-          setStoreToken("mock-token");
+          // A token can only be minted for a real Firebase user; without one the API
+          // falls back to its offline auth mode.
+          setToken(null);
+          setStoreToken(null);
         }
       } else {
         setToken(null);

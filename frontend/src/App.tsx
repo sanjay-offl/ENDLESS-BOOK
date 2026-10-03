@@ -20,6 +20,7 @@ function AnimatedRoutes() {
         <Route path="/chapters" element={<ChaptersPage />} />
         <Route path="/chapters/:chapterId" element={<ChapterDetailPage />} />
         <Route path="/chapters/:chapterId/:pageNum" element={<MemoryDetailPage />} />
+        <Route path="/memories/:memoryId" element={<MemoryDetailPage />} />
         <Route path="/submit" element={<SubmitPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/profile" element={<ProfilePage />} />
@@ -32,11 +33,21 @@ function AnimatedRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Header />
-      <main style={{ minHeight: "calc(100vh - 180px)", display: "flex", flexDirection: "column" }}>
-        <AnimatedRoutes />
-      </main>
-      <Footer />
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Header />
+        {/* The header is fixed, so the content needs to clear it. */}
+        <main
+          style={{
+            paddingTop: "var(--header-height)",
+            flex: "1 0 auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <AnimatedRoutes />
+        </main>
+        <Footer />
+      </div>
     </BrowserRouter>
   );
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { api, Memory, NewMemory } from "../api";
-import { useAuth } from "./useAuth";
+import { api, Memory, NewMemory, DEMO_AUTH_TOKEN } from "../api";
+import { useContributor } from "./useContributor";
 
 export function useMemory(id?: string) {
   const [memory, setMemory] = useState<Memory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const contributor = useContributor();
 
   const loadMemory = useCallback(async () => {
     if (!id) return;
@@ -27,8 +27,10 @@ export function useMemory(id?: string) {
   }, [loadMemory]);
 
   const createMemory = async (data: NewMemory) => {
-    const authToken = token || "anonymous-token";
-    return await api.createMemory(data, authToken);
+    if (!contributor) {
+      throw new Error("Sign in before publishing a page.");
+    }
+    return api.createMemory(data, contributor.token || DEMO_AUTH_TOKEN);
   };
 
   return { memory, loading, error, refetch: loadMemory, createMemory };
@@ -38,17 +40,19 @@ export function useUserMemories(uid?: string) {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const contributor = useContributor();
 
   const loadUserMemories = useCallback(async () => {
     if (!uid) {
+      setMemories([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const authToken = token || "anonymous-token";
+      // The API only serves the caller's own pages, so this must be the signed-in uid.
+      const authToken = contributor?.token || DEMO_AUTH_TOKEN;
       const data = await api.getUserMemories(uid, authToken);
       setMemories(data);
     } catch (err) {
@@ -56,7 +60,7 @@ export function useUserMemories(uid?: string) {
     } finally {
       setLoading(false);
     }
-  }, [uid, token]);
+  }, [uid, contributor?.token]);
 
   useEffect(() => {
     loadUserMemories();

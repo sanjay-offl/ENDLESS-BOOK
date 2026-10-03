@@ -3,26 +3,28 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import PageWrapper from "../components/layout/PageWrapper";
 import SplitHeadline from "../components/ui/SplitHeadline";
 import SubmitMemoryForm from "../components/forms/SubmitMemoryForm";
-import { useAuth } from "../hooks/useAuth";
+import { useContributor } from "../hooks/useContributor";
 import { useChapters } from "../hooks/useChapter";
 
 export default function SubmitPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { contributor, loading: authLoading } = useContributor();
   const { chapters, loading: chaptersLoading } = useChapters();
 
   const chapterId = searchParams.get("chapterId") || undefined;
   const pageNumStr = searchParams.get("pageNum");
   const pageNum = pageNumStr ? parseInt(pageNumStr, 10) : undefined;
 
-  // Rule 7: Redirect to /login?returnTo=/submit if not authenticated
+  // Sign-in is required, and returnTo keeps the target chapter so the reader resumes the
+  // page they were writing. The effect only runs once the session has resolved.
   useEffect(() => {
-    const demoUser = localStorage.getItem("endless_book_demo_user");
-    if (!authLoading && !user && !demoUser) {
-      navigate("/login?returnTo=/submit");
+    if (!authLoading && !contributor) {
+      // The target chapter is preserved so signing in resumes the same page.
+      const returnTo = `/submit${window.location.search}`;
+      navigate(`/login?returnTo=${encodeURIComponent(returnTo)}`, { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [authLoading, contributor, navigate]);
 
   if (authLoading || chaptersLoading) {
     return (

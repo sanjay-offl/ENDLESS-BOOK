@@ -26,9 +26,9 @@ fun Route.chapterRoutes() {
     authenticate("firebase") {
         post("/chapters") {
             val principal = call.principal<FirebasePrincipal>()
-            val uid = principal?.uid ?: "anonymous-contributor"
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Sign in to start a chapter."))
             val body = call.receive<NewChapter>()
-            call.respond(HttpStatusCode.Created, service.createChapter(body, uid))
+            call.respond(HttpStatusCode.Created, service.createChapter(body, principal.uid))
         }
     }
 }

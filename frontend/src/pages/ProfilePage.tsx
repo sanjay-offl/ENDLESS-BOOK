@@ -2,58 +2,58 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import { clearDemoUser } from "../demoSession";
 import PageWrapper from "../components/layout/PageWrapper";
 import SplitHeadline from "../components/ui/SplitHeadline";
 import MemoryCard from "../components/ui/MemoryCard";
 import ChapterCard from "../components/ui/ChapterCard";
 import Button from "../components/ui/Button";
-import { useAuth } from "../hooks/useAuth";
+import { useContributor } from "../hooks/useContributor";
 import { useChapters } from "../hooks/useChapter";
 import { useUserMemories } from "../hooks/useMemory";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { contributor, loading: authLoading } = useContributor();
   const { chapters } = useChapters();
 
-  const demoUserStr = localStorage.getItem("endless_book_demo_user");
-  const demoUser = demoUserStr ? JSON.parse(demoUserStr) : null;
+  const { memories: userMemories, loading: memoriesLoading, error: memoriesError } =
+    useUserMemories(contributor?.uid);
 
-  const effectiveUid = user?.uid || (demoUser ? "user-1" : undefined);
-  const effectiveDisplayName = user?.displayName || demoUser?.displayName || "Elena Vance";
-  const effectiveEmail = user?.email || demoUser?.email || "contributor@endlessbook.org";
-
-  const { memories: userMemories, loading: memoriesLoading } = useUserMemories(effectiveUid);
-
-  // Critical Rule 7: Redirect to /login?returnTo=/profile if not authenticated
+  // Sign-in is required to view a profile.
   useEffect(() => {
-    if (!authLoading && !user && !demoUser) {
-      navigate("/login?returnTo=/profile");
+    if (!authLoading && !contributor) {
+      navigate("/login?returnTo=%2Fprofile", { replace: true });
     }
-  }, [user, authLoading, demoUser, navigate]);
+  }, [authLoading, contributor, navigate]);
 
   const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch {
-      // Ignored
+    clearDemoUser();
+    if (contributor && !contributor.isDemo) {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.warn("Firebase sign-out failed:", err);
+      }
     }
-    localStorage.removeItem("endless_book_demo_user");
     navigate("/");
   };
 
-  const userChapters = chapters.filter(
-    (c) => c.founderId === effectiveUid || c.founderName === effectiveDisplayName
-  );
+  const userChapters =
+    contributor && chapters.length > 0
+      ? chapters.filter(
+          (c) => c.founderId === contributor.uid || c.founderName === contributor.displayName
+        )
+      : [];
 
-  const initials = (effectiveDisplayName || "U")
+  const initials = (contributor?.displayName || "U")
     .split(" ")
     .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
 
-  if (authLoading) {
+  if (authLoading || !contributor) {
     return (
       <PageWrapper>
         <div className="container" style={{ padding: "var(--section-pad) var(--site-margin)" }}>
@@ -87,19 +87,7 @@ export default function ProfilePage() {
           }}
         >
           {/* Avatar Circle */}
-          {user?.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={effectiveDisplayName}
-              style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: "50%",
-                border: "var(--border-width) solid var(--color-ink)",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
+          {contributor.isDemo ? (
             <div
               style={{
                 width: "80px",
@@ -119,7 +107,7 @@ export default function ProfilePage() {
             >
               {initials}
             </div>
-          )}
+          ) : null}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             <span
@@ -135,7 +123,7 @@ export default function ProfilePage() {
               AUTHOR DOSSIER
             </span>
             <SplitHeadline
-              text={effectiveDisplayName.toUpperCase()}
+              text={contributor.displayName.toUpperCase()}
               as="h1"
               style={{ fontSize: "var(--text-3xl)" }}
             />
@@ -147,8 +135,22 @@ export default function ProfilePage() {
                 opacity: 0.75,
               }}
             >
-              {effectiveEmail}
+              {contributor.email}
             </span>
+            {contributor.isDemo && (
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "var(--text-xxs)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "var(--color-accent)",
+                  fontWeight: 700,
+                }}
+              >
+                DEMO CONTRIBUTOR — PAGES ARE NOT PERSISTED
+              </span>
+            )}
           </div>
         </div>
 
@@ -161,6 +163,8 @@ export default function ProfilePage() {
               alignItems: "center",
               borderBottom: "var(--border-thin) solid var(--color-ink)",
               paddingBottom: "0.75rem",
+              gap: "1rem",
+              flexWrap: "wrap",
             }}
           >
             <h2
@@ -181,6 +185,19 @@ export default function ProfilePage() {
               + WRITE ANOTHER PAGE
             </Button>
           </div>
+
+          {memoriesError && (
+            <p
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "var(--text-xs)",
+                color: "var(--color-accent)",
+                textTransform: "uppercase",
+              }}
+            >
+              ⚠ {memoriesError}
+            </p>
+          )}
 
           {memoriesLoading && (
             <div className="skeleton" style={{ height: "140px", width: "100%" }} />
@@ -223,9 +240,6 @@ export default function ProfilePage() {
         <section style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
               borderBottom: "var(--border-thin) solid var(--color-ink)",
               paddingBottom: "0.75rem",
             }}

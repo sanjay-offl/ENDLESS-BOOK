@@ -2,8 +2,6 @@ package com.endlessbook.shared.model
 
 import kotlinx.serialization.Serializable
 
-private val NEWLINES = Regex("\\s+")
-
 fun chapterSummaryOf(chapter: Chapter, excerptMaxChars: Int = 160): ChapterSummary =
     ChapterSummary(
         id = chapter.id,

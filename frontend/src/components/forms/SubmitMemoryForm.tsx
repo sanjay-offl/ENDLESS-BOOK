@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../firebase";
-import { Chapter, api } from "../../api";
-import { useAuth } from "../../hooks/useAuth";
+import { Chapter, api, DEMO_AUTH_TOKEN } from "../../api";
+import { useContributor } from "../../hooks/useContributor";
 import Button from "../ui/Button";
 import MemoryCard from "../ui/MemoryCard";
 import TagChip from "../ui/TagChip";
@@ -20,7 +20,7 @@ export default function SubmitMemoryForm({
   initialPageNum,
   availableChapters,
 }: SubmitMemoryFormProps) {
-  const { user, token } = useAuth();
+  const { contributor, loading: authLoading } = useContributor();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<"continue" | "new">(
@@ -59,11 +59,19 @@ export default function SubmitMemoryForm({
     setTags(parsed);
   };
 
+  // Release the previous object URL so repeated previews do not leak memory.
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 5 * 1024 * 1024) {
         setError("Image size must be under 5MB.");
+        e.target.value = "";
         return;
       }
       setImageFile(file);
@@ -74,8 +82,10 @@ export default function SubmitMemoryForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
+    if (authLoading) return;
+    if (!contributor) {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      navigate(`/login?returnTo=${encodeURIComponent(returnTo)}`);
       return;
     }
 
@@ -98,7 +108,9 @@ export default function SubmitMemoryForm({
     setError(null);
 
     try {
-      const authToken = token || "mock-token";
+      // The demo contributor has no Firebase ID token; the API accepts this placeholder
+      // only while it is running without credentials.
+      const authToken = contributor.token || DEMO_AUTH_TOKEN;
       let chapterId = selectedChapterId;
 
       // 1. If new chapter, create it first
@@ -113,14 +125,19 @@ export default function SubmitMemoryForm({
         chapterId = createdChapter.id;
       }
 
-      // 2. Upload image if selected
+      // 2. Upload image if selected. Uploading needs a real Firebase session, so the demo
+      // contributor keeps the local preview instead.
       let uploadedImageUrl: string | null = null;
-      if (imageFile && user) {
+      if (imageFile) {
         try {
-          const path = `memories/${user.uid}/${Date.now()}_${imageFile.name}`;
-          const storageRef = ref(storage, path);
-          await uploadBytes(storageRef, imageFile);
-          uploadedImageUrl = await getDownloadURL(storageRef);
+          if (!contributor.isDemo) {
+            const path = `memories/${contributor.uid}/${Date.now()}_${imageFile.name}`;
+            const storageRef = ref(storage, path);
+            await uploadBytes(storageRef, imageFile);
+            uploadedImageUrl = await getDownloadURL(storageRef);
+          } else {
+            throw new Error("Storage upload requires a real Firebase session.");
+          }
         } catch (uploadErr) {
           console.warn("Storage upload failed, using local preview url:", uploadErr);
           uploadedImageUrl = imagePreviewUrl;
@@ -538,7 +555,7 @@ export default function SubmitMemoryForm({
                 body ||
                 "Your handwritten recollections will be immortalized here in clear, editorial prose. As you type in the editor, your memory takes shape on this page."
               }
-              authorName={user?.displayName || "Your Name"}
+              authorName={contributor?.displayName || "Your Name"}
               authorCity={authorCity || "Your City"}
               createdAt={Date.now()}
               imageUrl={imagePreviewUrl}

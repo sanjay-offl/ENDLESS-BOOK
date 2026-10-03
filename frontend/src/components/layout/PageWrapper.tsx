@@ -25,9 +25,9 @@ export default function PageWrapper({
       animate="animate"
       exit="exit"
       className={`page-wrapper ${className}`}
+      // Grows to fill the column so a short page still pushes the footer to the bottom.
       style={{
-        paddingTop: "var(--header-height)",
-        minHeight: "100vh",
+        flex: "1 0 auto",
         display: "flex",
         flexDirection: "column",
         ...style,

@@ -3,6 +3,8 @@ package com.endlessbook.shared.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+private val NEWLINES = Regex("\\s+")
+
 /**
  * Chapter lifecycle.
  *
@@ -37,6 +39,9 @@ enum class ChapterStatus {
             needsReview -> "in review"
         }
 }
+
+/** Collapses any run of whitespace, used when building editorial excerpts. */
+internal val ANY_WHITESPACE = Regex("\\s+")
 
 /** A city level point. Deliberately coarse so no one is located precisely. */
 @Serializable
@@ -83,7 +88,7 @@ data class Chapter(
 
     /** The first sentence of page one, used for editorial excerpts. */
     fun excerpt(maxChars: Int = 220): String {
-        val first = pages.firstOrNull().orEmpty().replace(NEWLINES, " ").trim()
+        val first = pages.firstOrNull().orEmpty().replace(ANY_WHITESPACE, " ").trim()
         if (first.length <= maxChars) return first
         val cut = first.take(maxChars)
         val lastSpace = cut.lastIndexOf(' ')

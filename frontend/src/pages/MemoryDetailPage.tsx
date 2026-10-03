@@ -3,19 +3,43 @@ import PageWrapper from "../components/layout/PageWrapper";
 import RuledDivider from "../components/ui/RuledDivider";
 import TagChip from "../components/ui/TagChip";
 import { useChapter } from "../hooks/useChapter";
+import { useMemory } from "../hooks/useMemory";
 
 export default function MemoryDetailPage() {
-  const { chapterId, pageNum } = useParams<{ chapterId: string; pageNum: string }>();
+  // A memory can be reached by id or by its position inside a chapter.
+  const { chapterId, pageNum, memoryId } = useParams<{
+    chapterId?: string;
+    pageNum?: string;
+    memoryId?: string;
+  }>();
   const navigate = useNavigate();
-  const pageNumber = parseInt(pageNum || "1", 10);
-  const { chapterDetail, loading, error } = useChapter(chapterId);
 
-  const chapter = chapterDetail?.chapter;
+  const { memory: directMemory, loading: memoryLoading, error: memoryError } = useMemory(memoryId);
+
+  const needsChapter = !memoryId;
+  const { chapterDetail, loading: chapterLoading, error: chapterError } = useChapter(
+    needsChapter ? chapterId : undefined
+  );
+
+  const pageNumber = pageNum ? parseInt(pageNum, 10) : 1;
   const memories = chapterDetail?.memories || [];
-  const currentMemory = memories.find((m) => m.pageNum === pageNumber) || memories[0];
+  // Falling back to the first memory would show page 1's prose under a "page 03"
+  // heading, so an out-of-range page is reported instead.
+  const currentMemory = memoryId
+    ? directMemory
+    : memories.find((m) => m.pageNum === pageNumber) ?? null;
 
-  const prevPage = pageNumber > 1 ? pageNumber - 1 : null;
-  const nextPage = pageNumber < (chapter?.pageCount || 1) ? pageNumber + 1 : null;
+  const loading = memoryId ? memoryLoading : chapterLoading;
+  const error = memoryId ? memoryError : chapterError;
+
+  // For the /memories/:id route the chapter is not known until the memory loads, so the
+  // surrounding chapter is resolved from it.
+  const resolvedChapterId = memoryId ? directMemory?.chapterId : chapterId;
+  const chapter = chapterDetail?.chapter ?? null;
+  const pageTotal = chapter?.pageCount ?? 0;
+
+  const prevPage = !memoryId && pageNumber > 1 ? pageNumber - 1 : null;
+  const nextPage = !memoryId && pageTotal > 0 && pageNumber < pageTotal ? pageNumber + 1 : null;
 
   const formattedDate = currentMemory
     ? new Date(currentMemory.createdAt || Date.now()).toLocaleDateString("en-US", {
@@ -54,17 +78,17 @@ export default function MemoryDetailPage() {
           <Link to="/chapters" className="link-draw">
             CHAPTERS
           </Link>
-          <span>/</span>
-          {chapter && (
+          {resolvedChapterId && (
             <>
-              <Link to={`/chapters/${chapter.id}`} className="link-draw">
-                {chapter.title}
+              <span>/</span>
+              <Link to={`/chapters/${resolvedChapterId}`} className="link-draw">
+                {chapter?.title || `CHAPTER ${resolvedChapterId.replace("chapter-", "")}`}
               </Link>
               <span>/</span>
             </>
           )}
           <span style={{ color: "var(--color-gold)", fontWeight: 700 }}>
-            PAGE 0{pageNumber}
+            PAGE 0{currentMemory?.pageNum ?? pageNumber}
           </span>
         </nav>
 
@@ -101,6 +125,54 @@ export default function MemoryDetailPage() {
             <div className="skeleton" style={{ height: "40px", width: "40%" }} />
             <div className="skeleton" style={{ height: "80px", width: "100%" }} />
             <div className="skeleton" style={{ height: "240px", width: "100%" }} />
+          </div>
+        )}
+
+        {/* Missing Page */}
+        {!loading && !error && !currentMemory && (
+          <div
+            style={{
+              maxWidth: "680px",
+              margin: "0 auto",
+              width: "100%",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "1.5rem",
+              paddingBottom: "4rem",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-editorial)",
+                fontStyle: "italic",
+                fontSize: "var(--text-xl)",
+                color: "var(--color-ink)",
+                lineHeight: 1.4,
+              }}
+            >
+              Page {pageNumber} of this chapter has not been written yet.{" "}
+              {chapter && pageTotal < 3
+                ? "The next contributor gets to fill it."
+                : "Every page in this chapter is bound."}
+            </p>
+            {resolvedChapterId && (
+              <Link
+                to={`/chapters/${resolvedChapterId}`}
+                className="link-draw"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "var(--text-xs)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  fontWeight: 700,
+                  color: "var(--color-accent)",
+                }}
+              >
+                ← BACK TO CHAPTER
+              </Link>
+            )}
           </div>
         )}
 
@@ -146,7 +218,15 @@ export default function MemoryDetailPage() {
               </h1>
 
               {currentMemory.tags.length > 0 && (
-                <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.5rem",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                    marginTop: "0.5rem",
+                  }}
+                >
                   {currentMemory.tags.map((t, idx) => (
                     <TagChip key={idx} label={t} />
                   ))}
@@ -168,6 +248,7 @@ export default function MemoryDetailPage() {
                 <img
                   src={currentMemory.imageUrl}
                   alt={currentMemory.title}
+                  loading="lazy"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -229,7 +310,7 @@ export default function MemoryDetailPage() {
             >
               {prevPage ? (
                 <button
-                  onClick={() => navigate(`/chapters/${chapterId}/${prevPage}`)}
+                  onClick={() => navigate(`/chapters/${resolvedChapterId}/${prevPage}`)}
                   className="link-draw"
                   style={{
                     background: "none",
@@ -250,7 +331,7 @@ export default function MemoryDetailPage() {
 
               {nextPage ? (
                 <button
-                  onClick={() => navigate(`/chapters/${chapterId}/${nextPage}`)}
+                  onClick={() => navigate(`/chapters/${resolvedChapterId}/${nextPage}`)}
                   className="link-draw"
                   style={{
                     background: "none",
@@ -267,7 +348,7 @@ export default function MemoryDetailPage() {
                 </button>
               ) : (
                 <Link
-                  to={`/chapters/${chapterId}`}
+                  to={`/chapters/${resolvedChapterId}`}
                   className="link-draw"
                   style={{
                     fontFamily: "var(--font-display)",

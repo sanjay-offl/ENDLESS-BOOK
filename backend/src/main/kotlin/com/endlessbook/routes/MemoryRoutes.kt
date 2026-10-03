@@ -21,16 +21,9 @@ fun Route.memoryRoutes() {
     authenticate("firebase") {
         post("/memories") {
             val principal = call.principal<FirebasePrincipal>()
-            val uid = principal?.uid ?: "anonymous-contributor"
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Sign in to contribute."))
             val body = call.receive<NewMemory>()
-            try {
-                val created = service.createMemory(body, uid)
-                call.respond(HttpStatusCode.Created, created)
-            } catch (e: IllegalStateException) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid state")))
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (e.message ?: "Failed to save memory")))
-            }
+            call.respond(HttpStatusCode.Created, service.createMemory(body, principal.uid))
         }
     }
 }

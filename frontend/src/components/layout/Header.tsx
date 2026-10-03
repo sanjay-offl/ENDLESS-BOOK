@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../../hooks/useAuth";
+import { useContributor } from "../../hooks/useContributor";
 
 export default function Header() {
-  const { user } = useAuth();
+  const { contributor } = useContributor();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -54,7 +54,17 @@ export default function Header() {
             gap: "0.5rem",
           }}
         >
-          <span style={{ color: "var(--color-gold)", fontSize: "var(--text-base)" }}>★</span>
+          <img
+            src="/logo.png"
+            alt="The Endless Book logo"
+            style={{
+              width: "3.5rem",
+              height: "2.25rem",
+              objectFit: "cover",
+              objectPosition: "center",
+              flexShrink: 0,
+            }}
+          />
           <span>THE ENDLESS BOOK</span>
           <span
             style={{
@@ -111,7 +121,7 @@ export default function Header() {
             Submit
           </Link>
 
-          {user ? (
+          {contributor ? (
             <Link
               to="/profile"
               className={`link-draw ${location.pathname === "/profile" ? "link-draw--accent" : ""}`}
@@ -249,7 +259,7 @@ export default function Header() {
             >
               Submit
             </Link>
-            {user ? (
+            {contributor ? (
               <Link
                 to="/profile"
                 onClick={closeMobileMenu}
@@ -261,7 +271,7 @@ export default function Header() {
                   color: "var(--color-accent)",
                 }}
               >
-                Profile ({user.displayName || "Account"})
+                Profile ({contributor.displayName})
               </Link>
             ) : (
               <Link

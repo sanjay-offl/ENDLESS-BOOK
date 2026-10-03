@@ -7,10 +7,7 @@
     "dev:backend": "cd backend && ./gradlew run",
     "build": "npm run build:frontend",
     "build:frontend": "cd frontend && npm run build",
-    "build:backend": "cd backend && ./gradlew build",
-    "build:web": "npm run build --prefix apps/web",
-    "dev:web": "cd apps/web && npm run dev",
-    "dev:api": "cd apps/api && ./gradlew run"
+    "build:backend": "cd backend && ./gradlew build"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

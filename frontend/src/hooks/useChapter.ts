@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { api, Chapter, ChapterDetail, NewChapter } from "../api";
-import { useAuth } from "./useAuth";
+import { api, Chapter, ChapterDetail, NewChapter, DEMO_AUTH_TOKEN } from "../api";
+import { useContributor } from "./useContributor";
 
 export function useChapters() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -31,7 +31,7 @@ export function useChapter(id?: string) {
   const [chapterDetail, setChapterDetail] = useState<ChapterDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const { contributor } = useContributor();
 
   const loadChapter = useCallback(async () => {
     if (!id) return;
@@ -52,8 +52,10 @@ export function useChapter(id?: string) {
   }, [loadChapter]);
 
   const createChapter = async (data: NewChapter) => {
-    const authToken = token || "anonymous-token";
-    return await api.createChapter(data, authToken);
+    if (!contributor) {
+      throw new Error("Sign in before starting a chapter.");
+    }
+    return api.createChapter(data, contributor.token || DEMO_AUTH_TOKEN);
   };
 
   return { chapterDetail, loading, error, refetch: loadChapter, createChapter };
