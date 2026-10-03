@@ -27,3 +27,10 @@ apps/api/__pycache__/
 .kotlin/
 .idea/
 *.iml
+
+# Vite frontend build output
+frontend/dist/
+
+# Backend compiled output
+backend/bin/
+backend/build/
