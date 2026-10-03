@@ -28,7 +28,7 @@ The API will be added to the local command once its Gradle wrapper is generated.
 The Vercel configuration in [`vercel.json`](./vercel.json) builds the Next.js app in `apps/web`. To deploy from GitHub:
 
 1. Import this repository at [vercel.com/new](https://vercel.com/new).
-2. Keep the project root at the repository root. The checked-in configuration runs the install and build commands for `apps/web`.
+2. Set the Vercel **Root Directory** to `apps/web`. The checked-in configuration runs the install and build commands inside that directory.
 3. Add the variables from `.env.example` in **Project Settings → Environment Variables**. Use the Firebase values from the Firebase console; do not commit `.env.local`.
 4. Set `NEXT_PUBLIC_API_URL` to the deployed API URL if the web app uses the API in that environment.
 5. Deploy.
