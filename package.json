@@ -1,0 +1,14 @@
+{
+  "name": "endless-ebook",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:api": "cd apps/api && ./gradlew run",
+    "build": "cd apps/web && npm run build",
+    "test": "cd apps/web && npm test --if-present && cd ../api && ./gradlew test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

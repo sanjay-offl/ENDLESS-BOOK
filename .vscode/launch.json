@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Ktor API",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "app.endless.ApplicationKt",
+      "projectName": "endless-ebook-api"
+    },
+    {
+      "name": "Next.js",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev:web"
+    }
+  ]
+}
