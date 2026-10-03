@@ -1,3 +1,6 @@
+/** Every chapter holds exactly this many pages, mirroring the API's PAGES_PER_CHAPTER. */
+export const PAGES_PER_CHAPTER = 3;
+
 export interface Chapter {
   id: string;
   number: number;

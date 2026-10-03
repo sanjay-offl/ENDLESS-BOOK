@@ -11,6 +11,11 @@ fun Application.configureSerialization() {
             prettyPrint = true
             isLenient = true
             ignoreUnknownKeys = true
+            // Without this, kotlinx.serialization omits every field that still holds its
+            // declared default, so `isOpen: true`, `tags: []` and `imageUrl: null` were
+            // missing from responses. Clients then read a full chapter as closed and a
+            // tagless memory crashed on `tags.length`.
+            encodeDefaults = true
         })
     }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { Fragment, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -68,6 +68,11 @@ export default function SplitHeadline({
   return (
     <Tag
       ref={containerRef}
+      // The visual gap between words used to come from a margin alone, which left the
+      // accessible text as one unbroken string ("WHATISAWWHENIWASAKID") for screen
+      // readers, search indexing and copy-paste. Real space characters are emitted
+      // between the word spans so the rendered text matches `text`.
+      aria-label={text}
       className={`headline-wrap ${className}`}
       style={{
         display: "inline-block",
@@ -76,20 +81,24 @@ export default function SplitHeadline({
       }}
     >
       {words.map((word, wIdx) => (
-        <span
-          key={wIdx}
-          style={{
-            display: "inline-block",
-            whiteSpace: "nowrap",
-            marginRight: wIdx < words.length - 1 ? "0.25em" : 0,
-          }}
-        >
-          {Array.from(word).map((char, cIdx) => (
-            <span key={cIdx} className="char-wrap">
-              <span className="char">{char}</span>
-            </span>
-          ))}
-        </span>
+        <Fragment key={wIdx}>
+          <span
+            aria-hidden="true"
+            style={{
+              display: "inline-block",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {Array.from(word).map((char, cIdx) => (
+              <span key={cIdx} className="char-wrap">
+                <span className="char">{char}</span>
+              </span>
+            ))}
+          </span>
+          {/* A real space keeps the words separated in the rendered text; the split
+              spans alone collapse to "WHATISAWWHENIWASAKID" when copied or read out. */}
+          {wIdx < words.length - 1 ? " " : null}
+        </Fragment>
       ))}
     </Tag>
   );
