@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment123456",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCnlCBY4yDbZTS1ri6TNtjwjalMGkx0adM",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "endless-ebook.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "endless-ebook",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "endless-ebook.firebasestorage.app",
