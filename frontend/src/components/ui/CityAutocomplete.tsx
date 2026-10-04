@@ -1,75 +1,73 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
 // ---------------------------------------------------------------------------
-// Types — we only use what we need from the Maps JS API types
+// Types for the Maps JS API (new Places API)
 // ---------------------------------------------------------------------------
 declare global {
   interface Window {
     google?: {
       maps?: {
-        places?: {
-          AutocompleteService: new () => GoogleAutocompleteService;
-          PlacesServiceStatus: { OK: string };
-        };
+        importLibrary?: (lib: string) => Promise<unknown>;
       };
     };
-    __gPlacesResolvers?: Array<() => void>;
-    __gPlacesLoading?: boolean;
+    __gMapsResolvers?: Array<() => void>;
+    __gMapsLoading?: boolean;
+    __gMapsCB?: () => void;
   }
 }
 
-interface GoogleAutocompleteService {
-  getPlacePredictions(
-    request: {
-      input: string;
-      types?: string[];
-    },
-    callback: (
-      results: Prediction[] | null,
-      status: string
-    ) => void
-  ): void;
+interface PlacePrediction {
+  mainText: { text: string };
+  text: { toString(): string };
+  placeId: string;
 }
 
-interface Prediction {
-  description: string;
-  place_id: string;
+interface Suggestion {
+  placePrediction: PlacePrediction;
+}
+
+interface AutocompleteSuggestionStatic {
+  fetchAutocompleteSuggestions(request: {
+    input: string;
+    includedPrimaryTypes?: string[];
+    sessionToken?: unknown;
+  }): Promise<{ suggestions: Suggestion[] }>;
+}
+
+interface PlacesLibrary {
+  AutocompleteSuggestion: AutocompleteSuggestionStatic;
+  AutocompleteSessionToken: new () => unknown;
 }
 
 // ---------------------------------------------------------------------------
-// The Google Maps API key for Places. Baked in at build time from the env var
-// VITE_MAPS_API_KEY (set in .env.local for dev, Vercel env vars for prod).
-// Restrict this key in Google Cloud Console to your Vercel domain +
-// Maps JavaScript API + Places API (New) only.
+// Key — read from Vite env var, with the restricted key as fallback.
 // ---------------------------------------------------------------------------
 const MAPS_API_KEY =
   (import.meta.env.VITE_MAPS_API_KEY as string | undefined) ??
   "AIzaSyDjCMzJVy_4eZcAOgFwzMEah_sS8J_DMIs";
 
-// Loads the Maps JS API exactly once even if called from multiple components.
+// ---------------------------------------------------------------------------
+// Load the Maps JS API exactly once (no `libraries` param — we use
+// importLibrary so the new Places API (New) works without the legacy lib).
+// ---------------------------------------------------------------------------
 function loadMapsScript(): Promise<void> {
   return new Promise((resolve) => {
-    // Already loaded
-    if (window.google?.maps?.places) {
+    if (window.google?.maps?.importLibrary) {
       resolve();
       return;
     }
+    window.__gMapsResolvers ??= [];
+    window.__gMapsResolvers.push(resolve);
+    if (window.__gMapsLoading) return;
+    window.__gMapsLoading = true;
 
-    // Register resolver to be called when the script fires its callback
-    window.__gPlacesResolvers ??= [];
-    window.__gPlacesResolvers.push(resolve);
-
-    if (window.__gPlacesLoading) return; // script tag already injected
-    window.__gPlacesLoading = true;
-
-    // The callback name needs to be on `window` before the script is parsed.
-    (window as Window & { __gPlacesCB?: () => void }).__gPlacesCB = () => {
-      (window.__gPlacesResolvers ?? []).forEach((r) => r());
-      window.__gPlacesResolvers = [];
+    window.__gMapsCB = () => {
+      (window.__gMapsResolvers ?? []).forEach((r) => r());
+      window.__gMapsResolvers = [];
     };
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&libraries=places&callback=__gPlacesCB`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&loading=async&callback=__gMapsCB`;
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
@@ -96,24 +94,25 @@ export default function CityAutocomplete({
   style,
 }: CityAutocompleteProps) {
   const [inputValue, setInputValue] = useState(value);
-  const [suggestions, setSuggestions] = useState<Prediction[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [serviceReady, setServiceReady] = useState(false);
+  const [placesLib, setPlacesLib] = useState<PlacesLibrary | null>(null);
   const [loadError, setLoadError] = useState(false);
 
-  const serviceRef = useRef<GoogleAutocompleteService | null>(null);
+  const sessionTokenRef = useRef<unknown>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Load the Maps API on mount
+  // Load the Maps API and the Places library on mount
   useEffect(() => {
     loadMapsScript()
-      .then(() => {
-        if (window.google?.maps?.places) {
-          serviceRef.current = new window.google.maps.places.AutocompleteService();
-          setServiceReady(true);
-        }
+      .then(async () => {
+        const lib = (await window.google!.maps!.importLibrary!(
+          "places"
+        )) as PlacesLibrary;
+        setPlacesLib(lib);
+        sessionTokenRef.current = new lib.AutocompleteSessionToken();
       })
       .catch(() => setLoadError(true));
   }, []);
@@ -123,10 +122,13 @@ export default function CityAutocomplete({
     setInputValue(value);
   }, [value]);
 
-  // Close dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -135,45 +137,48 @@ export default function CityAutocomplete({
   }, []);
 
   const fetchSuggestions = useCallback(
-    (input: string) => {
-      if (!serviceReady || !serviceRef.current || input.length < 2) {
+    async (input: string) => {
+      if (!placesLib || input.length < 2) {
         setSuggestions([]);
         setIsOpen(false);
         return;
       }
-
-      serviceRef.current.getPlacePredictions(
-        { input, types: ["(cities)"] },
-        (results, status) => {
-          const OK = window.google?.maps?.places?.PlacesServiceStatus.OK ?? "OK";
-          if (status === OK && results) {
-            setSuggestions(results);
-            setIsOpen(true);
-          } else {
-            setSuggestions([]);
-            setIsOpen(false);
-          }
-        }
-      );
+      try {
+        const { suggestions: results } =
+          await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input,
+            includedPrimaryTypes: ["locality", "administrative_area_level_3"],
+            sessionToken: sessionTokenRef.current,
+          });
+        setSuggestions(results);
+        setIsOpen(results.length > 0);
+      } catch {
+        setSuggestions([]);
+        setIsOpen(false);
+      }
     },
-    [serviceReady]
+    [placesLib]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
-    onChange(val); // keep parent in sync even for free-typed values
+    onChange(val);
     setHighlightedIndex(-1);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchSuggestions(val), 280);
   };
 
-  const handleSelect = (pred: Prediction) => {
-    setInputValue(pred.description);
-    onChange(pred.description);
+  const handleSelect = (s: Suggestion) => {
+    const label = s.placePrediction.text.toString();
+    setInputValue(label);
+    onChange(label);
     setSuggestions([]);
     setIsOpen(false);
+    // Refresh session token after a selection
+    if (placesLib) {
+      sessionTokenRef.current = new placesLib.AutocompleteSessionToken();
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -199,11 +204,13 @@ export default function CityAutocomplete({
         value={inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => inputValue.length >= 2 && suggestions.length > 0 && setIsOpen(true)}
+        onFocus={() =>
+          inputValue.length >= 2 && suggestions.length > 0 && setIsOpen(true)
+        }
         placeholder={
           loadError
             ? "e.g. Kyoto, Japan or Brooklyn, NY"
-            : serviceReady
+            : placesLib
             ? "Start typing your city…"
             : "e.g. Kyoto, Japan or Brooklyn, NY"
         }
@@ -234,12 +241,12 @@ export default function CityAutocomplete({
             overflowY: "auto",
           }}
         >
-          {suggestions.map((pred, idx) => (
+          {suggestions.map((s, idx) => (
             <li
-              key={pred.place_id}
+              key={s.placePrediction.placeId}
               role="option"
               aria-selected={idx === highlightedIndex}
-              onMouseDown={() => handleSelect(pred)}
+              onMouseDown={() => handleSelect(s)}
               onMouseEnter={() => setHighlightedIndex(idx)}
               style={{
                 padding: "0.65rem 1rem",
@@ -247,9 +254,13 @@ export default function CityAutocomplete({
                 fontSize: "var(--text-sm)",
                 cursor: "pointer",
                 backgroundColor:
-                  idx === highlightedIndex ? "var(--color-ink)" : "transparent",
+                  idx === highlightedIndex
+                    ? "var(--color-ink)"
+                    : "transparent",
                 color:
-                  idx === highlightedIndex ? "var(--color-page)" : "var(--color-ink)",
+                  idx === highlightedIndex
+                    ? "var(--color-page)"
+                    : "var(--color-ink)",
                 borderBottom:
                   idx < suggestions.length - 1
                     ? "var(--border-thin) solid var(--color-ink)"
@@ -257,7 +268,15 @@ export default function CityAutocomplete({
                 transition: "background-color 0.1s ease, color 0.1s ease",
               }}
             >
-              {pred.description}
+              <span style={{ fontWeight: 600 }}>
+                {s.placePrediction.mainText.text}
+              </span>
+              <span style={{ opacity: 0.55, fontSize: "0.85em", marginLeft: "0.35rem" }}>
+                {s.placePrediction.text
+                  .toString()
+                  .replace(s.placePrediction.mainText.text, "")
+                  .replace(/^,\s*/, "")}
+              </span>
             </li>
           ))}
           <li
