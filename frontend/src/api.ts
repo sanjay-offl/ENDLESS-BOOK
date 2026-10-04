@@ -210,13 +210,11 @@ function fallbackJSON<T>(path: string, options?: RequestInit): T {
 async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
   const isWrite = options?.method !== undefined && options.method !== "GET";
 
-  // Writes must reach a real API. Resolving them from the seed data would make a
-  // contribution look like it succeeded and then disappear on reload.
-  if (!BASE && !isWrite) {
-    return fallbackJSON<T>(path, options);
-  }
-
   try {
+    // `BASE` is empty by default so requests stay relative and the dev/preview server
+    // proxies them to the API. Reads must still go over the network: short-circuiting
+    // them to the seed data made freshly written pages invisible, because the writes
+    // themselves did reach the API.
     const res = await fetch(`${BASE}${path}`, {
       ...options,
       // Merged after the spread on purpose: `options.headers` would otherwise replace
@@ -234,6 +232,8 @@ async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
     return await res.json();
   } catch (err) {
     if (isWrite) {
+      // A write that quietly resolved from seed data would look successful and then
+      // vanish on reload, so it is surfaced instead.
       throw err instanceof Error ? err : new Error("Request failed");
     }
     console.warn(`Fetch error for ${path}, using local repository fallback.`, err);
