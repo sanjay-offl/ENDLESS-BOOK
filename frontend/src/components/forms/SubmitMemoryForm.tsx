@@ -8,6 +8,7 @@ import { useContributor } from "../../hooks/useContributor";
 import Button from "../ui/Button";
 import MemoryCard from "../ui/MemoryCard";
 import TagChip from "../ui/TagChip";
+import CityAutocomplete from "../ui/CityAutocomplete";
 
 interface SubmitMemoryFormProps {
   initialChapterId?: string;
@@ -417,11 +418,9 @@ export default function SubmitMemoryForm({
             >
               YOUR HOMETOWN / CITY
             </label>
-            <input
-              type="text"
-              placeholder="e.g. Kyoto, Japan or Brooklyn, NY"
+            <CityAutocomplete
               value={authorCity}
-              onChange={(e) => setAuthorCity(e.target.value)}
+              onChange={setAuthorCity}
               className="editorial-input"
             />
           </div>
