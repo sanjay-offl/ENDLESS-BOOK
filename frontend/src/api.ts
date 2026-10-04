@@ -201,6 +201,10 @@ function fallbackJSON<T>(path: string, options?: RequestInit): T {
     }
     return memory as unknown as T;
   }
+  if (path.startsWith("/api/users/") && path.endsWith("/memories")) {
+    const uid = path.replace("/api/users/", "").replace("/memories", "");
+    return fallbackMemories.filter((m) => m.authorId === uid) as unknown as T;
+  }
   if (path.includes("/memories") && options?.method === "GET") {
     return fallbackMemories as unknown as T;
   }
@@ -229,6 +233,14 @@ async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
     if (res.status === 204) {
       return undefined as T;
     }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("text/html")) {
+      throw new Error(
+        `API endpoint returned HTML (SPA fallback). VITE_API_URL may not be configured.`
+      );
+    }
+
     return await res.json();
   } catch (err) {
     if (isWrite) {
