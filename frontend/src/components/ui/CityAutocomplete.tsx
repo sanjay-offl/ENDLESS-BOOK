@@ -37,10 +37,14 @@ interface Prediction {
 }
 
 // ---------------------------------------------------------------------------
-// The Google Maps API key for Places. This is a client-side key embedded at
-// build time. Restrict it in the Google Cloud console to your Vercel domain.
+// The Google Maps API key for Places. Baked in at build time from the env var
+// VITE_MAPS_API_KEY (set in .env.local for dev, Vercel env vars for prod).
+// Restrict this key in Google Cloud Console to your Vercel domain +
+// Maps JavaScript API + Places API (New) only.
 // ---------------------------------------------------------------------------
-const MAPS_API_KEY = "AIzaSyBhz53O4Mp8FjNamckp525lxG9EY3byyxk";
+const MAPS_API_KEY =
+  (import.meta.env.VITE_MAPS_API_KEY as string | undefined) ??
+  "AIzaSyDjCMzJVy_4eZcAOgFwzMEah_sS8J_DMIs";
 
 // Loads the Maps JS API exactly once even if called from multiple components.
 function loadMapsScript(): Promise<void> {
