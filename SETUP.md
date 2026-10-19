@@ -45,18 +45,27 @@ VITE_FIREBASE_PROJECT_ID=endless-ebook
 VITE_FIREBASE_STORAGE_BUCKET=endless-ebook.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=524097848411
 VITE_FIREBASE_APP_ID=<your app id>
-VITE_API_URL=http://localhost:8080
+VITE_API_URL=
 ```
 
-Leave `VITE_API_URL` empty to render entirely from the bundled seed content, which is
-useful when the API is not running.
+Leave `VITE_API_URL` empty in development: requests then stay relative and the Vite dev
+server proxies `/api/*` to the backend. Set it only when the API is hosted on a different
+origin from the site. When a request fails the app falls back to the bundled seed content,
+so it still renders when the API is not running — but writes never fall back, because a
+contribution that only appeared locally would look successful and then disappear.
 
-3. For the Ktor backend to talk to Firestore, authenticate locally:
+4. If you run the frontend on a port other than 5173, allow that origin on the API:
+
+   ```bash
+   CORS_ALLOWED_ORIGINS=127.0.0.1:5174 ./gradlew run
+   ```
+
+5. For the Ktor backend to talk to Firestore, authenticate locally:
    ```bash
    gcloud auth application-default login
    ```
 
-4. Point the API at the project if it is not `endless-ebook`:
+6. Point the API at the project if it is not `endless-ebook`:
    ```bash
    FIREBASE_PROJECT_ID=your-project ./gradlew run
    ```

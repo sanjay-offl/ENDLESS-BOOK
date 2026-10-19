@@ -249,6 +249,10 @@ export default function MemoryDetailPage() {
                   src={currentMemory.imageUrl}
                   alt={currentMemory.title}
                   loading="lazy"
+                  // Keeps the prose readable if the image URL is dead or blocked.
+                  onError={(e) => {
+                    e.currentTarget.parentElement?.remove();
+                  }}
                   style={{
                     width: "100%",
                     height: "100%",

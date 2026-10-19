@@ -99,6 +99,10 @@ export default function CityAutocomplete({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [placesLib, setPlacesLib] = useState<PlacesLibrary | null>(null);
   const [loadError, setLoadError] = useState(false);
+  // Set when the Places RPC itself is rejected, which happens when the configured Maps
+  // key is not authorised for the Places API. The field stays fully usable as free text;
+  // only the suggestions go away.
+  const [suggestionsUnavailable, setSuggestionsUnavailable] = useState(false);
 
   const sessionTokenRef = useRef<unknown>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -155,6 +159,7 @@ export default function CityAutocomplete({
       } catch {
         setSuggestions([]);
         setIsOpen(false);
+        setSuggestionsUnavailable(true);
       }
     },
     [placesLib]
@@ -208,7 +213,7 @@ export default function CityAutocomplete({
           inputValue.length >= 2 && suggestions.length > 0 && setIsOpen(true)
         }
         placeholder={
-          loadError
+          loadError || suggestionsUnavailable
             ? "e.g. Kyoto, Japan or Brooklyn, NY"
             : placesLib
             ? "Start typing your city…"
@@ -221,6 +226,24 @@ export default function CityAutocomplete({
         aria-expanded={isOpen}
         role="combobox"
       />
+
+      {/* The Places key is not authorised, so say so instead of silently dropping the
+          suggestions and leaving the reader wondering why nothing appears. */}
+      {suggestionsUnavailable && !isOpen && (
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "var(--text-xxs)",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--color-ink)",
+            opacity: 0.65,
+            margin: "0.35rem 0 0",
+          }}
+        >
+          City suggestions are unavailable — type your city as plain text.
+        </p>
+      )}
 
       {isOpen && suggestions.length > 0 && (
         <ul

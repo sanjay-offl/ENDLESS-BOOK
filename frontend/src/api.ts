@@ -148,7 +148,7 @@ const fallbackMemories: Memory[] = [
     authorId: "user-2",
     authorName: "Marcus Thorne",
     authorCity: "Lisbon, Portugal",
-    imageUrl: "https://images.unsplash.com/photo-1513688285373-4ec92273f679?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1200&q=80",
     tags: ["Rooftops", "Adventure"],
     createdAt: 1717300000000,
   },

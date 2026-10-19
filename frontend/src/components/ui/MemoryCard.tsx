@@ -141,6 +141,12 @@ export default function MemoryCard({
             <img
               src={imageUrl}
               alt={title}
+              loading="lazy"
+              // A dead or blocked image URL should leave the prose intact instead of
+              // showing a broken-image placeholder.
+              onError={(e) => {
+                e.currentTarget.parentElement?.remove();
+              }}
               style={{
                 width: "100%",
                 height: "180px",

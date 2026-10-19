@@ -71,7 +71,6 @@ class ChapterValidatorTest {
         val long = "x".repeat(ChapterLimits.PAGE_MAX_CHARS + 1)
         val errors = ChapterValidator.validate("Title", listOf("a", "b", long), "en", "Chennai")
         assertNotNull(errors["page3"])
-        println("DBG errors=$errors page1=${errors["page1"]} page3=${errors["page3"]}")
         assertNull(errors["page1"])
     }
 
