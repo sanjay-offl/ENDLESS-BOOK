@@ -9,5 +9,6 @@
     "**/META-INF/maven/**",
     "**/apps/**",
     "**/frontend/**"
-  ]
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
